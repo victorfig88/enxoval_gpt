@@ -431,6 +431,22 @@
 
 
     /* Clothes responsive controls */
+
+    .clothFooter{
+      grid-column: 1 / -1;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      padding-top: 2px;
+    }
+    .clothFooter .tot{
+      font-size: 12px;
+      color: var(--muted);
+      text-align:left;
+      white-space: nowrap;
+    }
+
     .clothItem{grid-template-columns: 1fr auto;}
     .clothControls{
       display:grid;
@@ -1261,10 +1277,10 @@
       inpQ.addEventListener('input', ()=>{
         const v=Number(String(inpQ.value).replace(',','.'));
         it[bk]=Number.isFinite(v)&&v>=0?v:0;
-        save(); renderClothes();
+        save();
       });
-
-      const inpP=document.createElement('input');
+      inpQ.addEventListener('change', ()=>{ renderClothes(); });
+const inpP=document.createElement('input');
       inpP.className='inp';
       inpP.inputMode='decimal';
       inpP.placeholder='Preço USD';
@@ -1274,12 +1290,14 @@
       inpP.addEventListener('input', ()=>{
         const v=Number(String(inpP.value).replace(',','.'));
         it.preco_usd=Number.isFinite(v)?v:null;
-        save(); renderClothes();
+        save();
       });
+      inpP.addEventListener('change', ()=>{ renderClothes(); });
+const footer=document.createElement('div');
+      footer.className='clothFooter';
 
       const tot=document.createElement('div');
-      tot.className='m';
-      tot.style.textAlign='right';
+      tot.className='tot';
       tot.innerHTML = `Total: <b>${fmtUSD(lineTotal)}</b>`;
 
       const del=document.createElement('button');
@@ -1296,10 +1314,12 @@
         }
       });
 
+      footer.appendChild(tot);
+      footer.appendChild(del);
+
       box.appendChild(inpQ);
       box.appendChild(inpP);
-      box.appendChild(tot);
-      box.appendChild(del);
+      box.appendChild(footer);
 
       col.appendChild(box);
       div.appendChild(left);
