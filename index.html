@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Enxoval • WebApp</title>
+  <style>
+    :root{
+      --bg:#f7f7ff;
+      --bg2:#f0fbff;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line: rgba(17,24,39,.08);
+
+      --pink:#fb7185;
+      --sky:#60a5fa;
+      --mint:#34d399;
+      --sun:#fbbf24;
+      --vio:#a78bfa;
+
+      --shadow: 0 20px 55px rgba(17,24,39,.10);
+      --shadow2: 0 10px 25px rgba(17,24,39,.08);
+
+      --r: 22px;
+      --r2: 16px;
+
+      --tap: 44px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(900px 650px at 10% 0%, rgba(251,113,133,.18), transparent 55%),
+        radial-gradient(900px 700px at 110% 10%, rgba(96,165,250,.18), transparent 55%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.16), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100vh;
+    }
+
+    /* App shell */
+    .app{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 14px 90px;
+      display:grid;
+      grid-template-columns: 290px 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 980px){
+      .app{grid-template-columns: 1fr; padding-bottom: 120px;}
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position: sticky;
+      top: 14px;
+      align-self:start;
+    }
+    @media (max-width: 980px){
+      .sidebar{position: static;}
+    }
+
+    .card{
+      background: rgba(255,255,255,.92);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .pad{padding: 14px 14px;}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    .logo{
+      width:46px; height:46px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%),
+        linear-gradient(135deg, rgba(251,113,133,.96), rgba(96,165,250,.92));
+      box-shadow: var(--shadow2);
+      display:grid; place-items:center;
+      font-size: 22px;
+    }
+    h1{margin:0; font-size: 15px; letter-spacing:.2px}
+    .sub{margin-top:2px; font-size: 12px; color: var(--muted); line-height:1.25}
+
+    .tabs{
+      display:grid;
+      gap:10px;
+      margin-top: 12px;
+    }
+    .tab{
+      height: var(--tap);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 12px;
+      border-radius: 18px;
+      border:1px solid rgba(17,24,39,.08);
+      background: rgba(255,255,255,.82);
+      cursor:pointer;
+      font-weight: 900;
+      box-shadow: 0 10px 22px rgba(17,24,39,.06);
+    }
+    .tab:hover{transform: translateY(-1px)}
+    .tab.active{
+      border-color: rgba(96,165,250,.30);
+      background: rgba(96,165,250,.12);
+    }
+    .pill{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(17,24,39,.08);
+      background: rgba(255,255,255,.85);
+    }
+
+    .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px;}
+    .btn{
+      height: var(--tap);
+      padding: 0 12px;
+      border-radius: 16px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.84);
+      cursor:pointer;
+      font-weight: 900;
+      box-shadow: 0 10px 22px rgba(17,24,39,.06);
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn.primary{background: rgba(52,211,153,.14); border-color: rgba(52,211,153,.35); color:#065f46;}
+    .btn.danger{background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.35); color:#9f1239;}
+    .btn.ghost{background: rgba(255,255,255,.70);}
+
+    .search{
+      margin-top: 12px;
+      display:flex; gap:10px;
+      align-items:center;
+    }
+    .search input{
+      width:100%;
+      height: var(--tap);
+      border-radius: 16px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.86);
+      padding: 0 12px;
+      outline:none;
+      font-weight: 800;
+    }
+    .hint{font-size:12px; color: var(--muted); margin-top: 10px; line-height:1.35}
+
+    /* Content */
+    .content{min-width: 0;}
+    .headerCard{
+      background: rgba(255,255,255,.92);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .headerTop{
+      padding: 14px 14px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(17,24,39,.06);
+      background: rgba(255,255,255,.86);
+      flex-wrap:wrap;
+    }
+    .title{
+      font-weight: 1000;
+      font-size: 16px;
+      margin:0;
+      display:flex; gap:10px; align-items:center;
+    }
+    .title .spark{
+      width: 28px; height: 28px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(167,139,250,.30), rgba(96,165,250,.20));
+      display:grid; place-items:center;
+      border:1px solid rgba(17,24,39,.08);
+    }
+
+    .kpis{
+      padding: 14px 14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 980px){
+      .kpis{grid-template-columns: 1fr;}
+    }
+    .kpi{
+      border-radius: 18px;
+      border:1px solid rgba(17,24,39,.08);
+      background: rgba(255,255,255,.90);
+      padding: 12px 12px;
+      box-shadow: 0 10px 24px rgba(17,24,39,.05);
+    }
+    .kpi .l{font-size:12px; color:var(--muted); font-weight: 900;}
+    .kpi .v{font-size: 20px; font-weight: 1000; margin-top: 4px;}
+    .bar{
+      height:10px; border-radius:999px; overflow:hidden;
+      background: rgba(17,24,39,.06);
+      border:1px solid rgba(17,24,39,.08);
+      margin-top: 10px;
+    }
+    .bar > div{
+      height:100%; width:0%;
+      background: linear-gradient(90deg, rgba(52,211,153,.95), rgba(96,165,250,.92), rgba(251,113,133,.92));
+    }
+    .kpi .small{margin-top: 8px; font-size: 12px; color: var(--muted);}
+
+    /* Category cards */
+    .catGrid{
+      margin-top: 14px;
+      display:grid;
+      gap: 14px;
+    }
+    .cat{
+      background: rgba(255,255,255,.92);
+      border:1px solid rgba(17,24,39,.08);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .catTop{
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      border-bottom:1px solid rgba(17,24,39,.06);
+      background: rgba(255,255,255,.86);
+      flex-wrap:wrap;
+    }
+    .catName{
+      display:flex; gap:10px; align-items:center;
+      font-weight: 1000;
+      letter-spacing:.2px;
+    }
+    .catIcon{
+      width:38px;height:38px;border-radius: 16px;
+      display:grid; place-items:center;
+      border:1px solid rgba(17,24,39,.08);
+      box-shadow: 0 10px 22px rgba(17,24,39,.06);
+      background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(251,113,133,.12));
+      font-size: 18px;
+    }
+    .catMeta{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      color: var(--muted); font-size: 12px; font-weight: 900;
+    }
+    .catMeta .chip{
+      padding: 4px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(17,24,39,.08);
+      background: rgba(255,255,255,.90);
+    }
+    .catBar{
+      height: 8px;
+      border-radius: 999px;
+      overflow:hidden;
+      background: rgba(17,24,39,.06);
+      border:1px solid rgba(17,24,39,.08);
+      width: 220px;
+      max-width: 65vw;
+    }
+    .catBar > div{height:100%; width:0%; background: linear-gradient(90deg, rgba(96,165,250,.92), rgba(52,211,153,.92));}
+    .catActions{display:flex; gap:10px; align-items:center;}
+    .toggle{
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.86);
+      cursor:pointer;
+      font-weight: 1000;
+    }
+
+    .items{
+      padding: 12px 14px;
+      display:grid;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.88));
+    }
+
+    .item{
+      border-radius: 18px;
+      border:1px solid rgba(17,24,39,.08);
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 10px 22px rgba(17,24,39,.05);
+      padding: 10px 10px;
+      display:grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 10px;
+      align-items:flex-start;
+      cursor:pointer;
+    }
+    .item:hover{border-color: rgba(96,165,250,.28)}
+    .t{font-weight: 1000;}
+    .m{margin-top: 4px; font-size: 12px; color: var(--muted); line-height:1.25}
+    .right{display:flex; gap:8px; align-items:center;}
+    .aBtn{
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.88);
+      cursor:pointer;
+      font-weight: 1000;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .aBtn.link{border-color: rgba(52,211,153,.30); background: rgba(52,211,153,.12); color:#065f46; text-decoration:none;}
+    .aBtn.del{border-color: rgba(251,113,133,.30); background: rgba(251,113,133,.12); color:#9f1239;}
+    .check{transform: translateY(2px)}
+    .prio{
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 3px 10px;
+      border-radius:999px;
+      border:1px solid rgba(17,24,39,.08);
+      font-size: 12px;
+      font-weight: 1000;
+      margin-right: 6px;
+    }
+    .prio.alta{background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.28); color:#9f1239;}
+    .prio.moderada{background: rgba(251,191,36,.18); border-color: rgba(251,191,36,.28); color:#92400e;}
+    .prio.baixa{background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.28); color:#065f46;}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 3px 10px;
+      border-radius:999px;
+      border:1px solid rgba(17,24,39,.08);
+      font-size: 12px;
+      font-weight: 1000;
+      color: var(--muted);
+      background: rgba(255,255,255,.90);
+      white-space:nowrap;
+    }
+
+    /* Tips */
+    .tipsGrid{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 980px){
+      .tipsGrid{grid-template-columns:1fr;}
+    }
+    .tipsCard{
+      background: rgba(255,255,255,.92);
+      border:1px solid rgba(17,24,39,.08);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .tipsTop{
+      padding: 14px 14px;
+      border-bottom: 1px solid rgba(17,24,39,.06);
+      background: rgba(255,255,255,.86);
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    }
+    .tipsTitle{
+      display:flex; gap:10px; align-items:center;
+      font-weight: 1000; font-size: 14px;
+    }
+    .tipsIcon{
+      width:38px; height:38px; border-radius: 16px;
+      display:grid; place-items:center;
+      border:1px solid rgba(17,24,39,.08);
+      box-shadow: 0 10px 22px rgba(17,24,39,.06);
+      font-size: 18px;
+    }
+    .tipsIcon.good{background: rgba(96,165,250,.14); color:#1d4ed8;}
+    .tipsIcon.bad{background: rgba(251,113,133,.12); color:#9f1239;}
+    .tipsBody{padding: 12px 14px;}
+    .tipsBody ul{margin: 0; padding-left: 18px; display:grid; gap:8px;}
+    .tipsBody li{line-height:1.35;}
+    .tipLine{
+      padding: 10px 10px;
+      border-radius: 16px;
+      border:1px solid rgba(17,24,39,.08);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 10px 20px rgba(17,24,39,.04);
+    }
+
+    /* Clothes */
+    .ageTabs{display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px;}
+    .age{
+      height: var(--tap);
+      padding: 0 14px;
+      border-radius: 18px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.86);
+      cursor:pointer;
+      font-weight: 1000;
+      box-shadow: 0 10px 22px rgba(17,24,39,.06);
+    }
+    .age.active{background: rgba(96,165,250,.12); border-color: rgba(96,165,250,.35); color:#1d4ed8;}
+    .clothTop{
+      margin-top: 14px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    }
+    .inp{
+      height: 40px;
+      width: 110px;
+      border-radius: 14px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.90);
+      padding: 0 10px;
+      outline:none;
+      font-weight: 1000;
+    }
+    .two{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .two{grid-template-columns:1fr;}
+    }
+
+    /* Modal */
+    .modal{position:fixed; inset:0; display:none; background: rgba(17,24,39,.35); z-index: 80; padding: 14px;}
+    .modal .box{
+      max-width: 560px;
+      margin: 40px auto;
+      background: rgba(255,255,255,.96);
+      border:1px solid rgba(17,24,39,.10);
+      border-radius: 24px;
+      box-shadow: 0 30px 90px rgba(17,24,39,.22);
+      overflow:hidden;
+    }
+    .modal .hd{padding: 14px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid rgba(17,24,39,.08); background: rgba(255,255,255,.92);}
+    .modal .bd{padding: 14px 14px; display:grid; gap:10px;}
+    label{font-size:12px; color: var(--muted); font-weight: 1000;}
+    input[type="text"], input[type="number"], textarea{
+      width:100%;
+      border-radius: 16px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.96);
+      padding: 10px 10px;
+      outline:none;
+      font-weight: 800;
+    }
+    textarea{min-height: 84px; resize: vertical}
+    .actions{display:flex; gap:10px; justify-content:flex-end; padding: 14px 14px; border-top:1px solid rgba(17,24,39,.08); background: rgba(255,255,255,.92); flex-wrap:wrap;}
+
+    /* Mobile bottom nav */
+    .bottomNav{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,.85);
+      border-top: 1px solid rgba(17,24,39,.10);
+      backdrop-filter: blur(10px);
+      display:none;
+      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+      z-index: 90;
+    }
+    @media (max-width: 980px){
+      .bottomNav{display:block;}
+    }
+    .bottomNav .row{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .navBtn{
+      height: 52px;
+      border-radius: 18px;
+      border:1px solid rgba(17,24,39,.10);
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 10px 22px rgba(17,24,39,.06);
+      cursor:pointer;
+      font-weight: 1000;
+      display:grid; place-items:center;
+    }
+    .navBtn.active{background: rgba(96,165,250,.12); border-color: rgba(96,165,250,.35); color:#1d4ed8;}
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="card pad">
+      <div class="brand">
+        <div class="logo">🍼</div>
+        <div>
+          <h1>Enxoval • Orlando</h1>
+          <div class="sub">WebApp simples e fofo • funciona offline depois de abrir 1x</div>
+        </div>
+      </div>
+
+      <div class="tabs" style="margin-top:14px;">
+        <div class="tab active" data-view="prod"><span>🧸 Produtos</span><span class="pill" id="pillProd">—</span></div>
+        <div class="tab" data-view="roup"><span>👶 Roupas</span><span class="pill" id="pillClothes">—</span></div>
+        <div class="tab" data-view="dicas"><span>✨ Dicas</span><span class="pill">📌</span></div>
+        <div class="tab" data-view="lixo"><span>🗑️ Lixeira</span><span class="pill" id="pillTrash">—</span></div>
+      </div>
+
+      <div class="btnRow">
+        <button class="btn" id="btnExport">⬇️ Exportar</button>
+        <button class="btn" id="btnImport">⬆️ Importar</button>
+        <button class="btn danger" id="btnReset">🔁 Reset</button>
+      </div>
+
+      <div class="search">
+        <input id="searchBox" type="text" placeholder="Buscar (produto, marca, loja...)" />
+      </div>
+
+      <div class="hint">
+        <b>Dica rápida:</b> toque no card para editar (preço/qtde/link/notas).<br/>
+        Excluir manda pra lixeira (dá pra restaurar).
+      </div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <section class="content">
+    <!-- PRODUCTS -->
+    <div id="view-prod">
+      <div class="headerCard">
+        <div class="headerTop">
+          <div class="title"><span class="spark">✨</span> Produtos</div>
+          <div class="row">
+            <span class="pill">Ordem: Alta → Moderada → Baixa</span>
+          </div>
+        </div>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="l">Budget (USD)</div>
+            <div class="v" id="kBudget">—</div>
+            <div class="bar"><div id="bar"></div></div>
+            <div class="small" id="barTxt">—</div>
+          </div>
+          <div class="kpi">
+            <div class="l">Gastos (USD)</div>
+            <div class="v" id="kSpent">—</div>
+            <div class="small">Restante: <b id="kLeft">—</b></div>
+          </div>
+          <div class="kpi">
+            <div class="l">Planejado (USD)</div>
+            <div class="v" id="kPlanned">—</div>
+            <div class="small">Itens comprados: <b id="kBought">—</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="catGrid" id="catGrid"></div>
+    </div>
+
+    <!-- CLOTHES -->
+    <div id="view-roup" style="display:none;">
+      <div class="headerCard">
+        <div class="headerTop">
+          <div class="title"><span class="spark">🧷</span> Roupas por idade</div>
+          <div class="row">
+            <button class="btn primary" id="btnAddClothing">➕ Adicionar peça</button>
+          </div>
+        </div>
+        <div class="pad">
+          <div class="ageTabs" id="ageTabs"></div>
+          <div class="two" style="margin-top:14px;">
+            <div class="kpi" style="box-shadow:none;">
+              <div class="l">Gasto estimado roupas (USD)</div>
+              <div class="v" id="cSpent">—</div>
+              <div class="small" id="cMeta">—</div>
+            </div>
+            <div class="kpi" style="box-shadow:none;">
+              <div class="l">Buscar</div>
+              <input class="inp" style="width:100%;" id="clothesSearch" placeholder="ex.: body, pijama..." />
+              <div class="small">Você edita comprado + preço por peça.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="catGrid" style="margin-top:14px;">
+        <div class="cat">
+          <div class="catTop">
+            <div class="catName"><span class="catIcon" style="background:linear-gradient(135deg, rgba(167,139,250,.18), rgba(96,165,250,.16));">👕</span> Lista de roupas</div>
+            <div class="catMeta"><span class="chip">Clique na peça para editar</span></div>
+          </div>
+          <div class="items" id="clothesList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div id="view-dicas" style="display:none;">
+      <div class="headerCard">
+        <div class="headerTop">
+          <div class="title"><span class="spark">🌈</span> Dicas (pra não estourar e comprar melhor)</div>
+          <div class="row"><span class="pill">baseado no seu Excel</span></div>
+        </div>
+        <div class="pad">
+          <div class="sub">Ideias rápidas pra decidir mais rápido e evitar excessos. (Perfeito pra abrir na loja.)</div>
+        </div>
+      </div>
+
+      <div class="tipsGrid">
+        <div class="tipsCard">
+          <div class="tipsTop">
+            <div class="tipsTitle"><span class="tipsIcon good">💡</span> Dicas gerais</div>
+            <button class="btn ghost" id="copyTipsGood">📋 Copiar</button>
+          </div>
+          <div class="tipsBody">
+            <div id="tipsGerais"></div>
+          </div>
+        </div>
+
+        <div class="tipsCard">
+          <div class="tipsTop">
+            <div class="tipsTitle"><span class="tipsIcon bad">🚫</span> O que evitar</div>
+            <button class="btn ghost" id="copyTipsBad">📋 Copiar</button>
+          </div>
+          <div class="tipsBody">
+            <div id="tipsEvitar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRASH -->
+    <div id="view-lixo" style="display:none;">
+      <div class="headerCard">
+        <div class="headerTop">
+          <div class="title"><span class="spark">🗑️</span> Lixeira</div>
+          <div class="row"><button class="btn danger" id="btnEmptyTrash">Esvaziar</button></div>
+        </div>
+        <div class="pad">
+          <div class="sub">Tudo que você exclui vai parar aqui — dá pra restaurar com 1 toque.</div>
+        </div>
+      </div>
+
+      <div class="catGrid" id="trashGrid"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Bottom nav (mobile) -->
+<div class="bottomNav">
+  <div class="row">
+    <button class="navBtn active" data-view="prod">🧸<div style="font-size:12px;font-weight:1000">Prod</div></button>
+    <button class="navBtn" data-view="roup">👶<div style="font-size:12px;font-weight:1000">Roupas</div></button>
+    <button class="navBtn" data-view="dicas">✨<div style="font-size:12px;font-weight:1000">Dicas</div></button>
+    <button class="navBtn" data-view="lixo">🗑️<div style="font-size:12px;font-weight:1000">Lixo</div></button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="box">
+    <div class="hd">
+      <div style="font-weight:1000" id="mTitle">Editar</div>
+      <button class="btn" id="mClose">Fechar</button>
+    </div>
+    <div class="bd">
+      <div>
+        <label>Nome</label>
+        <input type="text" id="mName" />
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div>
+          <label>Qtde</label>
+          <input type="number" step="1" min="0" id="mQty" />
+        </div>
+        <div>
+          <label>Preço unit (USD)</label>
+          <input type="number" step="0.01" min="0" id="mPrice" />
+        </div>
+      </div>
+      <div>
+        <label>Link</label>
+        <input type="text" id="mLink" placeholder="https://..." />
+      </div>
+      <div>
+        <label>Notas</label>
+        <textarea id="mNotes" placeholder="Cor, tamanho, alternativa, decisão..."></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn danger" id="mDelete">🗑️ Excluir</button>
+      <button class="btn primary" id="mSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fmtUSD = (n) => Number(n||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
+  const prioRank = (p) => ({'Alta':1,'Moderada':2,'Baixa':3}[p] || 99);
+  const prioClass = (p) => (p==='Alta'?'alta':(p==='Moderada'?'moderada':'baixa'));
+
+  const iconForCategory = (cat) => {
+    const c = (cat||'').toLowerCase();
+    if(c.includes('aliment')) return '🍼';
+    if(c.includes('banho')||c.includes('higien')) return '🛁';
+    if(c.includes('sono')||c.includes('berço')||c.includes('cama')) return '🌙';
+    if(c.includes('passeio')||c.includes('carrinho')||c.includes('viagem')) return '🚗';
+    if(c.includes('saúde')||c.includes('farm')||c.includes('med')) return '🩺';
+    if(c.includes('segur')||c.includes('monitor')||c.includes('câmera')) return '👀';
+    if(c.includes('brinqu')||c.includes('estim')) return '🧸';
+    if(c.includes('amament')||c.includes('leite')) return '🤱';
+    if(c.includes('quarto')||c.includes('decora')) return '🧡';
+    return '✨';
+  };
+
+  // State
+  let BASE=null, STATE=null;
+  const KEY='enxoval_state_v4';
+
+  async function loadBase(){
+    const res = await fetch('./data.json',{cache:'no-store'});
+    BASE = await res.json();
+    const stored = localStorage.getItem(KEY);
+    STATE = stored ? JSON.parse(stored) : null;
+    if(!STATE || !STATE.products) STATE = structuredClone(BASE);
+    if(!STATE.trash) STATE.trash = {products:[], clothes:[]};
+    save();
+  }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(STATE)); }
+
+  function reset(){
+    if(!confirm('Isso apaga alterações locais e volta ao Excel. Continuar?')) return;
+    STATE = structuredClone(BASE);
+    STATE.trash = {products:[], clothes:[]};
+    save();
+    renderAll();
+  }
+
+  function exportBackup(){
+    const blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='enxoval_backup.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  function importBackup(file){
+    const fr=new FileReader();
+    fr.onload=()=>{
+      try{
+        const obj=JSON.parse(fr.result);
+        if(!obj || !obj.products) throw new Error('Arquivo inválido');
+        STATE=obj;
+        if(!STATE.trash) STATE.trash={products:[], clothes:[]};
+        save(); renderAll();
+      }catch(e){ alert('Não consegui importar: '+e.message); }
+    };
+    fr.readAsText(file);
+  }
+
+  // Views
+  function setView(v){
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+    document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+
+    document.getElementById('view-prod').style.display = (v==='prod')?'block':'none';
+    document.getElementById('view-roup').style.display = (v==='roup')?'block':'none';
+    document.getElementById('view-dicas').style.display = (v==='dicas')?'block':'none';
+    document.getElementById('view-lixo').style.display = (v==='lixo')?'block':'none';
+  }
+
+  // Modal
+  let MOD=null;
+  const modal=document.getElementById('modal');
+  const mTitle=document.getElementById('mTitle');
+  const mName=document.getElementById('mName');
+  const mQty=document.getElementById('mQty');
+  const mPrice=document.getElementById('mPrice');
+  const mLink=document.getElementById('mLink');
+  const mNotes=document.getElementById('mNotes');
+
+  function openModalProduct(item){
+    MOD={type:'product', id:item.id};
+    mTitle.textContent='Editar produto';
+    mName.value=item.produto||'';
+    mQty.value=Number(item.qtde||1);
+    mPrice.value=(item.preco_usd==null)?'':Number(item.preco_usd);
+    mLink.value=item.link||'';
+    mNotes.value=item.obs||'';
+    document.getElementById('mDelete').style.display='inline-flex';
+    modal.style.display='block';
+  }
+  function openModalNewProduct(categoria){
+    MOD={type:'new_product', categoria};
+    mTitle.textContent='Adicionar produto';
+    mName.value='';
+    mQty.value=1;
+    mPrice.value='';
+    mLink.value='';
+    mNotes.value='';
+    document.getElementById('mDelete').style.display='none';
+    modal.style.display='block';
+  }
+  function openModalClothing(item){
+    MOD={type:'clothing', id:item.id};
+    mTitle.textContent='Editar peça de roupa';
+    mName.value=item.peca||'';
+    mQty.value=1;
+    mPrice.value=(item.preco_usd==null)?'':Number(item.preco_usd);
+    mLink.value='';
+    mNotes.value=item.comentario||'';
+    document.getElementById('mDelete').style.display='inline-flex';
+    modal.style.display='block';
+  }
+  function openModalNewClothing(){
+    MOD={type:'new_clothing'};
+    mTitle.textContent='Adicionar peça de roupa';
+    mName.value='';
+    mQty.value=1;
+    mPrice.value='';
+    mLink.value='';
+    mNotes.value='';
+    document.getElementById('mDelete').style.display='none';
+    modal.style.display='block';
+  }
+  function closeModal(){ modal.style.display='none'; MOD=null; }
+
+  function modalSave(){
+    if(!MOD) return;
+    const name=(mName.value||'').trim();
+    const qty=Number(mQty.value||1);
+    const priceStr=(mPrice.value||'').toString().trim();
+    const price = priceStr===''?null:Number(priceStr);
+    const link=(mLink.value||'').trim();
+    const notes=(mNotes.value||'').trim();
+
+    if(MOD.type==='product'){
+      const it=STATE.products.find(x=>x.id===MOD.id);
+      if(!it) return;
+      it.produto=name||it.produto;
+      it.qtde=Number.isFinite(qty)&&qty>0?qty:1;
+      it.preco_usd=Number.isFinite(price)?price:null;
+      it.link=link||it.link||'';
+      it.obs=notes;
+      save(); renderProducts(); closeModal(); return;
+    }
+    if(MOD.type==='new_product'){
+      if(!name){ alert('Coloque um nome para o produto.'); return; }
+      const newId=Date.now();
+      STATE.products.push({
+        id:newId,
+        categoria: MOD.categoria,
+        produto: name,
+        marca:'',
+        periodo:'',
+        qtde: Number.isFinite(qty)&&qty>0?qty:1,
+        prioridade:'Baixa',
+        indispensavel:'',
+        preco_usd: Number.isFinite(price)?price:null,
+        subtotal_usd: 0,
+        comprar_onde:'',
+        loja:'',
+        link: link||'',
+        obs_critica:'',
+        alternativas:'',
+        obs: notes,
+        comprado:false
+      });
+      save(); renderProducts(); closeModal(); return;
+    }
+    if(MOD.type==='clothing'){
+      const it=STATE.clothes.find(x=>x.id===MOD.id);
+      if(!it) return;
+      it.peca=name||it.peca;
+      it.preco_usd=Number.isFinite(price)?price:null;
+      it.comentario=notes;
+      save(); renderClothes(); closeModal(); return;
+    }
+    if(MOD.type==='new_clothing'){
+      if(!name){ alert('Coloque um nome para a peça.'); return; }
+      const newId=Date.now();
+      STATE.clothes.push({
+        id:newId, peca:name, avoid:false,
+        qtde_sugerida:'',
+        RN:0, M0_3:0, M3_6:0, M6_9:0, M9_12:0,
+        estacao:'', melhor_compra:'', comentario: notes,
+        comprado_RN:0, comprado_M0_3:0, comprado_M3_6:0, comprado_M6_9:0, comprado_M9_12:0,
+        preco_usd: Number.isFinite(price)?price:null
+      });
+      save(); renderClothes(); closeModal(); return;
+    }
+  }
+
+  function modalDelete(){
+    if(!MOD) return;
+    if(!confirm('Mover para a lixeira?')) return;
+
+    if(MOD.type==='product'){
+      const idx=STATE.products.findIndex(x=>x.id===MOD.id);
+      if(idx>=0){
+        const [it]=STATE.products.splice(idx,1);
+        STATE.trash.products.unshift({...it, __deletedAt:new Date().toISOString()});
+      }
+      save(); renderAll(); closeModal(); return;
+    }
+    if(MOD.type==='clothing'){
+      const idx=STATE.clothes.findIndex(x=>x.id===MOD.id);
+      if(idx>=0){
+        const [it]=STATE.clothes.splice(idx,1);
+        STATE.trash.clothes.unshift({...it, __deletedAt:new Date().toISOString()});
+      }
+      save(); renderAll(); closeModal(); return;
+    }
+  }
+
+  // Products calc
+  function subtotal(it){
+    const q=Number(it.qtde||1);
+    const p=(it.preco_usd==null)?null:Number(it.preco_usd);
+    const sub=Number(it.subtotal_usd||0);
+    if(Number.isFinite(p)) return p*(Number.isFinite(q)&&q>0?q:1);
+    if(Number.isFinite(sub)&&sub>0) return sub;
+    return 0;
+  }
+
+  function renderProducts(){
+    const q = (document.getElementById('searchBox').value||'').trim().toLowerCase();
+
+    STATE.products.sort((a,b)=>{
+      const d=prioRank(a.prioridade)-prioRank(b.prioridade);
+      if(d!==0) return d;
+      return (a.produto||'').localeCompare(b.produto||'');
+    });
+
+    const budget=Number(STATE.meta.budget_usd||0);
+    const planned=STATE.products.reduce((acc,it)=>acc+subtotal(it),0);
+    const spent=STATE.products.filter(it=>it.comprado).reduce((acc,it)=>acc+subtotal(it),0);
+    const left=budget-spent;
+
+    document.getElementById('kBudget').textContent=fmtUSD(budget);
+    document.getElementById('kSpent').textContent=fmtUSD(spent);
+    document.getElementById('kLeft').textContent=fmtUSD(left);
+    document.getElementById('kPlanned').textContent=fmtUSD(planned);
+
+    const boughtCount = STATE.products.filter(x=>x.comprado).length;
+    document.getElementById('kBought').textContent = `${boughtCount}/${STATE.products.length}`;
+    document.getElementById('pillProd').textContent = `${boughtCount}/${STATE.products.length}`;
+
+    const trashCount = (STATE.trash?.products?.length||0) + (STATE.trash?.clothes?.length||0);
+    document.getElementById('pillTrash').textContent = trashCount;
+
+    const pct = planned>0 ? Math.max(0, Math.min(100, (spent/planned)*100)) : 0;
+    document.getElementById('bar').style.width=pct.toFixed(1)+'%';
+    document.getElementById('barTxt').textContent = pct.toFixed(1)+'% do valor planejado já comprado';
+
+    // group
+    const groups={};
+    for(const it of STATE.products){
+      const hay = [
+        it.categoria, it.produto, it.marca, it.loja, it.comprar_onde,
+        it.prioridade, it.indispensavel, it.obs, it.obs_critica, it.alternativas
+      ].join(' ').toLowerCase();
+      if(q && !hay.includes(q)) continue;
+
+      const k=it.categoria||'Sem categoria';
+      groups[k]=groups[k]||[];
+      groups[k].push(it);
+    }
+    const cats = Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+    const grid=document.getElementById('catGrid');
+    grid.innerHTML='';
+
+    for(const cat of cats){
+      const list=groups[cat];
+      const bought=list.filter(x=>x.comprado).length;
+      const total=list.length;
+      const catPlanned=list.reduce((acc,it)=>acc+subtotal(it),0);
+      const catSpent=list.filter(x=>x.comprado).reduce((acc,it)=>acc+subtotal(it),0);
+      const catPct = catPlanned>0 ? Math.max(0, Math.min(100, (catSpent/catPlanned)*100)) : 0;
+
+      const wrap=document.createElement('div');
+      wrap.className='cat';
+
+      const top=document.createElement('div');
+      top.className='catTop';
+
+      const left=document.createElement('div');
+      left.style.display='grid';
+      left.style.gap='6px';
+
+      left.innerHTML = `
+        <div class="catName">
+          <span class="catIcon">${iconForCategory(cat)}</span>
+          <span>${cat}</span>
+        </div>
+        <div class="catMeta">
+          <span class="chip">${bought}/${total} comprados</span>
+          <span class="chip">Planejado: <b>${fmtUSD(catPlanned)}</b></span>
+          <span class="chip">Gasto: <b>${fmtUSD(catSpent)}</b></span>
+          <span class="catBar" title="Progresso por valor comprado"><div style="width:${catPct.toFixed(1)}%"></div></span>
+        </div>
+      `;
+
+      const actions=document.createElement('div');
+      actions.className='catActions';
+      const btnAdd=document.createElement('button');
+      btnAdd.className='btn primary';
+      btnAdd.textContent='➕ Adicionar';
+      btnAdd.addEventListener('click', ()=>openModalNewProduct(cat));
+
+      const btnToggle=document.createElement('button');
+      btnToggle.className='toggle';
+      btnToggle.textContent='Recolher';
+      actions.appendChild(btnAdd);
+      actions.appendChild(btnToggle);
+
+      top.appendChild(left);
+      top.appendChild(actions);
+
+      const items=document.createElement('div');
+      items.className='items';
+
+      let open=true;
+      btnToggle.addEventListener('click', ()=>{
+        open=!open;
+        items.style.display = open?'grid':'none';
+        btnToggle.textContent = open?'Recolher':'Expandir';
+      });
+
+      for(const it of list){
+        const pr=it.prioridade||'';
+        const prc=prioClass(pr);
+
+        const div=document.createElement('div');
+        div.className='item';
+        div.addEventListener('click', (e)=>{
+          if(e.target && (e.target.tagName==='INPUT' || e.target.tagName==='BUTTON' || e.target.tagName==='A')) return;
+          openModalProduct(it);
+        });
+
+        const cb=document.createElement('input');
+        cb.type='checkbox';
+        cb.className='check';
+        cb.checked=!!it.comprado;
+        cb.addEventListener('click',(e)=>e.stopPropagation());
+        cb.addEventListener('change', ()=>{
+          it.comprado=cb.checked;
+          save();
+          renderProducts();
+        });
+
+        const mid=document.createElement('div');
+        const meta1=[];
+        if(it.marca) meta1.push(it.marca);
+        if(it.loja) meta1.push(it.loja);
+        const meta2=[];
+        if(it.comprar_onde) meta2.push(it.comprar_onde);
+        meta2.push(`Subtotal: ${fmtUSD(subtotal(it))}`);
+
+        mid.innerHTML = `
+          <div class="t">${it.produto}</div>
+          <div class="m">
+            <span class="prio ${prc}">${pr||'—'}</span>
+            ${it.indispensavel?`<span class="badge">Indisp: ${it.indispensavel}</span>`:''}
+          </div>
+          ${meta1.length?`<div class="m">${meta1.join(' • ')}</div>`:''}
+          <div class="m">${meta2.join(' • ')}</div>
+          ${it.obs?`<div class="m">📝 ${it.obs}</div>`:''}
+        `;
+
+        const right=document.createElement('div');
+        right.className='right';
+
+        if(it.link){
+          const a=document.createElement('a');
+          a.className='aBtn link';
+          a.href=it.link;
+          a.target='_blank';
+          a.rel='noopener';
+          a.textContent='Abrir';
+          a.addEventListener('click',(e)=>e.stopPropagation());
+          right.appendChild(a);
+        }
+
+        const del=document.createElement('button');
+        del.className='aBtn del';
+        del.textContent='Excluir';
+        del.addEventListener('click',(e)=>{
+          e.stopPropagation();
+          if(!confirm('Mover para a lixeira?')) return;
+          const idx=STATE.products.findIndex(x=>x.id===it.id);
+          if(idx>=0){
+            const [rm]=STATE.products.splice(idx,1);
+            STATE.trash.products.unshift({...rm, __deletedAt:new Date().toISOString()});
+            save(); renderAll();
+          }
+        });
+        right.appendChild(del);
+
+        div.appendChild(cb);
+        div.appendChild(mid);
+        div.appendChild(right);
+        items.appendChild(div);
+      }
+
+      wrap.appendChild(top);
+      wrap.appendChild(items);
+      grid.appendChild(wrap);
+    }
+  }
+
+  // Tips
+  function renderTips(){
+    const wrapGood=document.getElementById('tipsGerais');
+    const wrapBad=document.getElementById('tipsEvitar');
+    wrapGood.innerHTML='';
+    wrapBad.innerHTML='';
+
+    (STATE.tips?.gerais||[]).forEach(t=>{
+      const d=document.createElement('div');
+      d.className='tipLine';
+      d.textContent=t;
+      wrapGood.appendChild(d);
+    });
+
+    (STATE.tips?.evitar||[]).forEach(t=>{
+      const d=document.createElement('div');
+      d.className='tipLine';
+      d.style.borderColor='rgba(251,113,133,.22)';
+      d.textContent=t;
+      wrapBad.appendChild(d);
+    });
+  }
+
+  function copyText(lines){
+    const txt = lines.join('\n');
+    navigator.clipboard?.writeText(txt).then(()=>alert('Copiado!'));
+  }
+
+  // Clothes
+  const AGE = [
+    {key:'RN', label:'RN'},
+    {key:'M0_3', label:'0–3 meses'},
+    {key:'M3_6', label:'3–6 meses'},
+    {key:'M6_9', label:'6–9 meses'},
+    {key:'M9_12', label:'9–12 meses'},
+  ];
+  let AGEKEY='RN';
+  function boughtKey(ageKey){
+    return ({
+      'RN':'comprado_RN',
+      'M0_3':'comprado_M0_3',
+      'M3_6':'comprado_M3_6',
+      'M6_9':'comprado_M6_9',
+      'M9_12':'comprado_M9_12'
+    })[ageKey];
+  }
+
+  function renderAgeTabs(){
+    const el=document.getElementById('ageTabs');
+    el.innerHTML='';
+    for(const a of AGE){
+      const b=document.createElement('button');
+      b.className='age'+(a.key===AGEKEY?' active':'');
+      b.textContent=a.label;
+      b.addEventListener('click', ()=>{
+        AGEKEY=a.key;
+        renderClothes();
+      });
+      el.appendChild(b);
+    }
+  }
+
+  function renderClothes(){
+    renderAgeTabs();
+    const q=(document.getElementById('clothesSearch').value||'').trim().toLowerCase();
+
+    STATE.clothes.sort((a,b)=>{
+      const av=(a.avoid?1:0)-(b.avoid?1:0);
+      if(av!==0) return av;
+      return (a.peca||'').localeCompare(b.peca||'');
+    });
+
+    const bk=boughtKey(AGEKEY);
+    const suggestedTotal = STATE.clothes.reduce((acc,it)=>acc + Number(it[AGEKEY]||0), 0);
+    const boughtTotal = STATE.clothes.reduce((acc,it)=>acc + Number(it[bk]||0), 0);
+    const spent = STATE.clothes.reduce((acc,it)=>{
+      const p = (it.preco_usd==null)?0:Number(it.preco_usd);
+      const qv = Number(it[bk]||0);
+      return acc + (Number.isFinite(p)?p:0) * qv;
+    },0);
+
+    document.getElementById('cSpent').textContent = fmtUSD(spent);
+    const ageLabel = AGE.find(x=>x.key===AGEKEY).label;
+    document.getElementById('cMeta').textContent = `${ageLabel}: comprado ${boughtTotal} de ${suggestedTotal} peças (sugestão do Excel)`;
+    document.getElementById('pillClothes').textContent = `${boughtTotal}/${suggestedTotal}`;
+
+    const list=document.getElementById('clothesList');
+    list.innerHTML='';
+
+    for(const it of STATE.clothes){
+      const hay = [it.peca, it.comentario, it.estacao, it.melhor_compra].join(' ').toLowerCase();
+      if(q && !hay.includes(q)) continue;
+
+      const sug=Number(it[AGEKEY]||0);
+      const bought=Number(it[bk]||0);
+      const p=(it.preco_usd==null)?null:Number(it.preco_usd);
+      const lineTotal=(Number.isFinite(p)?p:0)*bought;
+
+      const div=document.createElement('div');
+      div.className='item';
+      div.style.gridTemplateColumns='1fr auto';
+      div.addEventListener('click', (e)=>{
+        if(e.target && e.target.tagName==='INPUT') return;
+        openModalClothing(it);
+      });
+
+      const left=document.createElement('div');
+      left.innerHTML = `
+        <div class="t">${it.avoid?'🚫 ':''}${it.peca}</div>
+        <div class="m">
+          <span class="badge">Sugestão: <b>${sug}</b></span>
+          ${it.melhor_compra?`<span class="badge">${it.melhor_compra}</span>`:''}
+          ${it.estacao?`<span class="badge">${it.estacao}</span>`:''}
+        </div>
+        ${it.comentario?`<div class="m">📝 ${it.comentario}</div>`:''}
+      `;
+
+      const col=document.createElement('div');
+      col.className='right';
+      col.style.alignItems='flex-start';
+
+      const box=document.createElement('div');
+      box.style.display='grid';
+      box.style.gap='8px';
+
+      const inpQ=document.createElement('input');
+      inpQ.className='inp';
+      inpQ.inputMode='numeric';
+      inpQ.value=String(bought);
+      inpQ.title='Quantidade comprada';
+      inpQ.addEventListener('click',(e)=>e.stopPropagation());
+      inpQ.addEventListener('input', ()=>{
+        const v=Number(String(inpQ.value).replace(',','.'));
+        it[bk]=Number.isFinite(v)&&v>=0?v:0;
+        save(); renderClothes();
+      });
+
+      const inpP=document.createElement('input');
+      inpP.className='inp';
+      inpP.inputMode='decimal';
+      inpP.placeholder='Preço USD';
+      inpP.value=(p==null)?'':String(p);
+      inpP.title='Preço unitário (USD)';
+      inpP.addEventListener('click',(e)=>e.stopPropagation());
+      inpP.addEventListener('input', ()=>{
+        const v=Number(String(inpP.value).replace(',','.'));
+        it.preco_usd=Number.isFinite(v)?v:null;
+        save(); renderClothes();
+      });
+
+      const tot=document.createElement('div');
+      tot.className='m';
+      tot.style.textAlign='right';
+      tot.innerHTML = `Total: <b>${fmtUSD(lineTotal)}</b>`;
+
+      const del=document.createElement('button');
+      del.className='aBtn del';
+      del.textContent='Excluir';
+      del.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        if(!confirm('Mover para a lixeira?')) return;
+        const idx=STATE.clothes.findIndex(x=>x.id===it.id);
+        if(idx>=0){
+          const [rm]=STATE.clothes.splice(idx,1);
+          STATE.trash.clothes.unshift({...rm, __deletedAt:new Date().toISOString()});
+          save(); renderAll();
+        }
+      });
+
+      box.appendChild(inpQ);
+      box.appendChild(inpP);
+      box.appendChild(tot);
+      box.appendChild(del);
+
+      col.appendChild(box);
+      div.appendChild(left);
+      div.appendChild(col);
+
+      list.appendChild(div);
+    }
+  }
+
+  // Trash
+  function renderTrash(){
+    const grid=document.getElementById('trashGrid');
+    grid.innerHTML='';
+
+    const makeCard = (title, icon, items, type) => {
+      const card=document.createElement('div');
+      card.className='cat';
+      const top=document.createElement('div');
+      top.className='catTop';
+      top.innerHTML = `
+        <div class="catName"><span class="catIcon">${icon}</span> ${title}</div>
+        <div class="catMeta"><span class="chip">${items.length} itens</span></div>
+      `;
+      const body=document.createElement('div');
+      body.className='items';
+
+      if(items.length===0){
+        const empty=document.createElement('div');
+        empty.className='tipLine';
+        empty.textContent='Nada aqui por enquanto.';
+        body.appendChild(empty);
+      } else {
+        for(const it of items){
+          const name = type==='products' ? it.produto : it.peca;
+          const row=document.createElement('div');
+          row.className='item';
+          row.style.gridTemplateColumns='1fr auto';
+          row.style.cursor='default';
+
+          const left=document.createElement('div');
+          left.innerHTML = `<div class="t">${name}</div><div class="m">Excluído (restaurável)</div>`;
+
+          const btn=document.createElement('button');
+          btn.className='btn primary';
+          btn.textContent='Restaurar';
+          btn.addEventListener('click', ()=>{
+            if(type==='products'){
+              STATE.products.unshift({...it});
+              STATE.trash.products = STATE.trash.products.filter(x=>x.__deletedAt!==it.__deletedAt);
+            } else {
+              STATE.clothes.unshift({...it});
+              STATE.trash.clothes = STATE.trash.clothes.filter(x=>x.__deletedAt!==it.__deletedAt);
+            }
+            STATE.products.forEach(x=>delete x.__deletedAt);
+            STATE.clothes.forEach(x=>delete x.__deletedAt);
+            save(); renderAll();
+          });
+
+          row.appendChild(left);
+          row.appendChild(btn);
+          body.appendChild(row);
+        }
+      }
+
+      card.appendChild(top);
+      card.appendChild(body);
+      grid.appendChild(card);
+    };
+
+    makeCard('Produtos', '🧸', STATE.trash.products||[], 'products');
+    makeCard('Roupas', '👶', STATE.trash.clothes||[], 'clothes');
+  }
+
+  function emptyTrash(){
+    if(!confirm('Esvaziar a lixeira definitivamente?')) return;
+    STATE.trash = {products:[], clothes:[]};
+    save(); renderTrash();
+    document.getElementById('pillTrash').textContent = '0';
+  }
+
+  function renderAll(){
+    renderProducts();
+    renderClothes();
+    renderTips();
+    renderTrash();
+  }
+
+  function wire(){
+    document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click', ()=>setView(b.dataset.view)));
+    document.querySelectorAll('.navBtn').forEach(b=>b.addEventListener('click', ()=>setView(b.dataset.view)));
+
+    document.getElementById('btnReset').addEventListener('click', reset);
+    document.getElementById('btnExport').addEventListener('click', exportBackup);
+    document.getElementById('btnImport').addEventListener('click', ()=>{
+      const inp=document.createElement('input');
+      inp.type='file';
+      inp.accept='application/json';
+      inp.onchange=()=>{ if(inp.files && inp.files[0]) importBackup(inp.files[0]); };
+      inp.click();
+    });
+
+    document.getElementById('btnAddClothing').addEventListener('click', openModalNewClothing);
+    document.getElementById('btnEmptyTrash').addEventListener('click', emptyTrash);
+
+    document.getElementById('mClose').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+    document.getElementById('mSave').addEventListener('click', modalSave);
+    document.getElementById('mDelete').addEventListener('click', modalDelete);
+
+    document.getElementById('searchBox').addEventListener('input', renderProducts);
+    document.getElementById('clothesSearch').addEventListener('input', renderClothes);
+
+    document.getElementById('copyTipsGood').addEventListener('click', ()=>copyText(STATE.tips?.gerais||[]));
+    document.getElementById('copyTipsBad').addEventListener('click', ()=>copyText(STATE.tips?.evitar||[]));
+  }
+
+  (async function init(){
+    await loadBase();
+    wire();
+    renderAll();
+    setView('prod');
+  })();
+</script>
+</body>
+</html>
