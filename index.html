@@ -545,25 +545,6 @@
         <button class="btn danger" id="btnReset">🔁 Reset</button>
       </div>
 
-
-      <div style="margin-top:12px; padding:12px; border-radius:18px; border:1px solid rgba(17,24,39,.10); background: rgba(255,255,255,.86);">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-          <div style="font-weight:1000;">🔄 Sincronização online</div>
-          <span class="pill" id="syncStatus">offline</span>
-        </div>
-        <div class="sub" style="margin-top:6px;">
-          Use o <b>mesmo link</b> com sua parceira para verem as mudanças.
-        </div>
-        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-          <button class="btn" id="btnCopyShare">🔗 Copiar link</button>
-          <button class="btn primary" id="btnForceSync">☁️ Sincronizar</button>
-        </div>
-        <div class="hint" style="margin-top:10px;">
-          Link da lista: <a href="#" id="shareLink" style="font-weight:1000; text-decoration:none; color:#1d4ed8; word-break:break-all;"></a>
-        </div>
-      </div>
-
-
       <div class="search">
         <input id="searchBox" type="text" placeholder="Buscar (produto, marca, loja...)" />
       </div>
@@ -746,8 +727,6 @@
   </div>
 </div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const fmtUSD = (n) => Number(n||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
   const prioRank = (p) => ({'Alta':1,'Moderada':2,'Baixa':3}[p] || 99);
@@ -769,105 +748,7 @@
 
   // State
   let BASE=null, STATE=null;
-  const KEY='enxoval_state_v5';
-
-  // --- Online Sync (Supabase)
-  const SUPABASE_URL = "https://axbdufyzkrfrhlkhfvtu.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmR1Znl6a3Jmcmhsa2hmdnR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTg3MjAsImV4cCI6MjA4NzYzNDcyMH0.iJgwEhlkYkvm8aS7B_bAD6bo7JFtkadx1EgktItBhL4";
-  const supabase = window.supabase?.createClient?.(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  function getListId(){
-    const u=new URL(location.href);
-    const fromUrl=u.searchParams.get('list');
-    if(fromUrl) return fromUrl;
-    const fromLocal=localStorage.getItem('enxoval_list_id_v5');
-    if(fromLocal) return fromLocal;
-    const id=(crypto.randomUUID?crypto.randomUUID():String(Date.now()));
-    localStorage.setItem('enxoval_list_id_v5', id);
-    // persist to URL for sharing
-    u.searchParams.set('list', id);
-    history.replaceState(null,'',u.toString());
-    return id;
-  }
-  const LIST_ID = getListId();
-
-  function updateShareUI(){
-    const u=new URL(location.href);
-    u.searchParams.set('list', LIST_ID);
-    const link=u.toString();
-    const a=document.getElementById('shareLink');
-    if(a){ a.textContent=link; a.href=link; }
-  }
-
-  let lastRemoteUpdatedAt = null;
-  let pushing = false;
-  let pushTimer = null;
-
-  function setSyncStatus(text){
-    const el=document.getElementById('syncStatus');
-    if(el) el.textContent=text;
-  }
-
-  async function pullFromCloud(){
-    if(!supabase) return false;
-    try{
-      const { data, error } = await supabase
-        .from('items')
-        .select('id, updated_at, data')
-        .eq('id', LIST_ID)
-        .maybeSingle();
-      if(error) throw error;
-      if(!data || !data.data) return false;
-
-      const remoteAt = data.updated_at ? new Date(data.updated_at).toISOString() : null;
-      // Apply only if remote is newer than what we last saw
-      if(remoteAt && lastRemoteUpdatedAt && remoteAt <= lastRemoteUpdatedAt) return true;
-
-      STATE = data.data;
-      // guarantee trash exists
-      if(!STATE.trash) STATE.trash={products:[], clothes:[]};
-      lastRemoteUpdatedAt = remoteAt || lastRemoteUpdatedAt;
-      saveLocal();
-      renderAll();
-      return true;
-    }catch(e){
-      console.warn('pull failed', e);
-      return false;
-    }
-  }
-
-  async function pushToCloud(force=false){
-    if(!supabase) return false;
-    if(pushing) return false;
-    pushing = true;
-    try{
-      const nowIso = new Date().toISOString();
-      const payload = { id: LIST_ID, type: 'state', data: STATE, updated_at: nowIso };
-      const { error } = await supabase
-        .from('items')
-        .upsert(payload, { onConflict: 'id' });
-      if(error) throw error;
-      lastRemoteUpdatedAt = nowIso;
-      setSyncStatus('online');
-      return true;
-    }catch(e){
-      console.warn('push failed', e);
-      setSyncStatus('offline');
-      return false;
-    }finally{
-      pushing = false;
-    }
-  }
-
-  function schedulePush(){
-    // debounce to avoid spam
-    if(pushTimer) clearTimeout(pushTimer);
-    pushTimer = setTimeout(()=>pushToCloud(false), 650);
-  }
-
-  function saveLocal(){
-    localStorage.setItem(KEY, JSON.stringify(STATE));
-  }
+  const KEY='enxoval_state_v4';
 
   async function loadBase(){
     const res = await fetch('./data.json',{cache:'no-store'});
@@ -876,50 +757,9 @@
     STATE = stored ? JSON.parse(stored) : null;
     if(!STATE || !STATE.products) STATE = structuredClone(BASE);
     if(!STATE.trash) STATE.trash = {products:[], clothes:[]};
-
-    updateShareUI();
-    setSyncStatus(supabase ? 'conectando…' : 'offline');
-
-    // 1) Try pulling from cloud (if exists)
-    const pulled = await pullFromCloud();
-
-    // 2) If nothing in cloud yet, push current local state (seed)
-    if(supabase && !pulled){
-      await pushToCloud(true);
-    }
-
-    // 3) Realtime: listen for partner updates
-    if(supabase){
-      try{
-        supabase
-          .channel('enxoval_'+LIST_ID)
-          .on('postgres_changes',
-            { event: '*', schema: 'public', table: 'items', filter: `id=eq.${LIST_ID}` },
-            (payload)=>{
-              const remoteAt = payload?.new?.updated_at ? new Date(payload.new.updated_at).toISOString() : null;
-              if(remoteAt && lastRemoteUpdatedAt && remoteAt <= lastRemoteUpdatedAt) return;
-              if(payload?.new?.data){
-                STATE = payload.new.data;
-                if(!STATE.trash) STATE.trash = {products:[], clothes:[]};
-                lastRemoteUpdatedAt = remoteAt || lastRemoteUpdatedAt;
-                saveLocal();
-                renderAll();
-                setSyncStatus('online');
-              }
-            }
-          )
-          .subscribe((status)=>{
-            if(status === 'SUBSCRIBED') setSyncStatus('online');
-          });
-      }catch(e){
-        console.warn('realtime failed', e);
-      }
-    }
-
-    saveLocal(); // keep local mirror
+    save();
   }
-  }
-  function save(){ saveLocal(); schedulePush(); }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(STATE)); }
 
   function reset(){
     if(!confirm('Isso apaga alterações locais e volta ao Excel. Continuar?')) return;
@@ -1594,30 +1434,6 @@ const footer=document.createElement('div');
 
     document.getElementById('copyTipsGood').addEventListener('click', ()=>copyText(STATE.tips?.gerais||[]));
     document.getElementById('copyTipsBad').addEventListener('click', ()=>copyText(STATE.tips?.evitar||[]));
-
-    // Online sync controls
-    const btnCopy=document.getElementById('btnCopyShare');
-    if(btnCopy){
-      btnCopy.addEventListener('click', async ()=>{
-        const link = document.getElementById('shareLink')?.textContent || location.href;
-        try{
-          await navigator.clipboard.writeText(link);
-          alert('Link copiado!');
-        }catch(e){
-          prompt('Copie o link:', link);
-        }
-      });
-    }
-    const btnForce=document.getElementById('btnForceSync');
-    if(btnForce){
-      btnForce.addEventListener('click', async ()=>{
-        setSyncStatus('sincronizando…');
-        await pushToCloud(true);
-        await pullFromCloud();
-        setSyncStatus('online');
-      });
-    }
-
   }
 
   (async function init(){
